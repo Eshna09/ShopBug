@@ -5,7 +5,7 @@ from app.schemas.product import ProductCreate
 
 
 def create_product(db: Session, data: ProductCreate) -> Product:
-    if data.price <= 0 or data.stock < 0:
+    if data.stock < 0:
         raise HTTPException(status_code=400, detail="Price must be greater than zero.")
     if data.stock < 0:
         raise HTTPException(status_code=400, detail="Stock cannot be negative.")
