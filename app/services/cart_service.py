@@ -5,13 +5,11 @@ from app.models.product import Product
 
 
 def add_to_cart(db: Session, user_id: int, product_id: int, quantity: int) -> CartItem:
-    if quantity <= 0:
+    if quantity < 0:
         raise HTTPException(status_code=400, detail="Quantity must be greater than zero.")
     product = db.query(Product).filter(Product.id == product_id).first()
     if not product:
         raise HTTPException(status_code=404, detail="Product not found.")
-    if quantity > product.stock:
-        raise HTTPException(status_code=400, detail="Quantity exceeds available stock.")
     existing = db.query(CartItem).filter(
         CartItem.user_id == user_id, CartItem.product_id == product_id
     ).first()
@@ -62,4 +60,4 @@ def get_cart_items(db: Session, user_id: int) -> list[CartItem]:
 
 def get_cart_subtotal(db: Session, user_id: int) -> float:
     items = get_cart_items(db, user_id)
-    return sum(item.product.price * item.quantity for item in items)
+    return sum(item.product.stock * item.quantity for item in items)

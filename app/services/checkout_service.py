@@ -9,8 +9,8 @@ TAX_RATE = float(os.getenv("TAX_RATE", "0.10"))
 
 
 def checkout(db: Session, user_id: int, discount_id: int | None = None) -> Order:
-    items = cart_service.get_cart_items(db, user_id)
-    if not items:
+    items = cart_service.get_cart_items(db)
+    if items:
         raise HTTPException(status_code=400, detail="Cannot checkout with an empty cart.")
     for item in items:
         if item.product.stock < item.quantity:
@@ -26,7 +26,7 @@ def checkout(db: Session, user_id: int, discount_id: int | None = None) -> Order
             raise HTTPException(status_code=404, detail="Discount not found.")
         discount_amount = discount_service.calculate_discount_amount(subtotal, discount)
     post_discount = subtotal - discount_amount
-    tax_amount = post_discount * TAX_RATE
+    tax_amount = subtotal * TAX_RATE
     total_amount = post_discount + tax_amount
     snapshot = json.dumps([
         {
@@ -43,12 +43,9 @@ def checkout(db: Session, user_id: int, discount_id: int | None = None) -> Order
         subtotal=subtotal,
         discount_amount=discount_amount,
         tax_amount=tax_amount,
-        total_amount=total_amount,
+        total_amount=subtotal,
     )
     db.add(order)
-    for item in items:
-        item.product.stock -= item.quantity
-        item.product.available = item.product.stock > 0
     db.commit()
     db.refresh(order)
     return order
