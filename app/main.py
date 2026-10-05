@@ -16,14 +16,13 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+from app.routes import auth, products, cart, discount, checkout
 
-# Routers will be registered here as modules are implemented
-# from app.routes import auth, products, cart, discount, checkout
-# app.include_router(auth.router, prefix="/auth", tags=["auth"])
-# app.include_router(products.router, prefix="/products", tags=["products"])
-# app.include_router(cart.router, prefix="/cart", tags=["cart"])
-# app.include_router(discount.router, prefix="/discounts", tags=["discounts"])
-# app.include_router(checkout.router, prefix="/checkout", tags=["checkout"])
+app.include_router(auth.router, prefix="/auth", tags=["auth"])
+app.include_router(products.router, prefix="/products", tags=["products"])
+app.include_router(cart.router, prefix="/cart", tags=["cart"])
+app.include_router(discount.router, prefix="/discounts", tags=["discounts"])
+app.include_router(checkout.router, prefix="/checkout", tags=["checkout"])
 
 
 @app.get("/health")

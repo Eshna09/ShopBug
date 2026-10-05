@@ -13,7 +13,7 @@ All code is Python 3.11+, FastAPI, SQLAlchemy (SQLite), Pydantic v2, pytest, and
 
 ## Tasks
 
-- [ ] 1. Project scaffold and infrastructure
+- [x] 1. Project scaffold and infrastructure
   - Create the full directory tree: `app/`, `app/models/`, `app/schemas/`, `app/routes/`, `app/services/`, `tests/`, `tests/reproduction_tests/`, `dataset/`, `dataset/bug_reports/`, `scripts/`
   - Create `app/__init__.py`, `app/models/__init__.py`, `app/schemas/__init__.py`, `app/routes/__init__.py`, `app/services/__init__.py`
   - Write `requirements.txt` with pinned versions: fastapi, uvicorn, sqlalchemy, pydantic, python-dotenv, passlib[bcrypt], pytest, pytest-asyncio, httpx, hypothesis
@@ -24,18 +24,18 @@ All code is Python 3.11+, FastAPI, SQLAlchemy (SQLite), Pydantic v2, pytest, and
   - Initialise git and make commit: "Initial project setup"
   - _Requirements: 13.1, 13.2, 13.4, 13.5_
 
-- [ ] 2. Authentication — models, schemas, service, routes
-  - [ ] 2.1 Write `app/models/user.py`: `User` SQLAlchemy model (id, email UNIQUE, hashed_password)
+- [x] 2. Authentication — models, schemas, service, routes
+  - [x] 2.1 Write `app/models/user.py`: `User` SQLAlchemy model (id, email UNIQUE, hashed_password)
     - _Requirements: 1.1_
-  - [ ] 2.2 Write `app/schemas/user.py`: `UserCreate` (email, password), `UserResponse` (id, email), `LoginRequest` (email, password)
+  - [x] 2.2 Write `app/schemas/user.py`: `UserCreate` (email, password), `UserResponse` (id, email), `LoginRequest` (email, password)
     - _Requirements: 1.3, 1.4_
-  - [ ] 2.3 Write `app/services/auth_service.py`: `register_user` (hash password with bcrypt, check duplicate → HTTP 400), `login_user` (look up email → 404 if missing, bcrypt verify → 401 if wrong)
+  - [x] 2.3 Write `app/services/auth_service.py`: `register_user` (hash password with bcrypt, check duplicate → HTTP 400), `login_user` (look up email → 404 if missing, bcrypt verify → 401 if wrong)
     - _Requirements: 1.1, 1.2, 2.1, 2.2, 2.3, 2.4_
-  - [ ] 2.4 Write `app/routes/auth.py`: `POST /register` and `POST /login` endpoints wired to service functions
+  - [x] 2.4 Write `app/routes/auth.py`: `POST /register` and `POST /login` endpoints wired to service functions
     - _Requirements: 1.1, 2.1_
-  - [ ]* 2.5 Write `tests/test_auth.py` — example tests: register succeeds, duplicate email → 400, wrong password → 401, missing email → 422
+  - [x]* 2.5 Write `tests/test_auth.py` — example tests: register succeeds, duplicate email → 400, wrong password → 401, missing email → 422
     - _Requirements: 1.1, 1.2, 1.3, 1.4, 2.1, 2.2, 2.3_
-  - [ ]* 2.6 Write property tests for auth in `tests/test_auth.py`
+  - [x]* 2.6 Write property tests for auth in `tests/test_auth.py`
     - **Property 1: Password Hashing on Registration** — `@given(email=emails(), password=text(min_size=1))` — verify stored hash ≠ plaintext and bcrypt.checkpw succeeds
     - **Property 2: Duplicate Registration Rejection** — `@given(email=emails(), password=text(min_size=1))` — register once, register again → 400, DB has exactly one user
     - **Property 3: Correct-Password Login Succeeds** — `@given(...)` — register then login with same password → 200
