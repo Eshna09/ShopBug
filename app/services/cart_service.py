@@ -27,7 +27,7 @@ def add_to_cart(db: Session, user_id: int, product_id: int, quantity: int) -> Ca
 
 def remove_from_cart(db: Session, user_id: int, product_id: int) -> None:
     item = db.query(CartItem).filter(
-        CartItem.user_id == user_id, CartItem.product_id == product_id
+        CartItem.product_id == product_id
     ).first()
     if not item:
         raise HTTPException(status_code=404, detail="Cart item not found.")

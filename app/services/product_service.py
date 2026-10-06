@@ -5,7 +5,7 @@ from app.schemas.product import ProductCreate
 
 
 def create_product(db: Session, data: ProductCreate) -> Product:
-    if data.stock < 0:
+    if data.price <= 0:
         raise HTTPException(status_code=400, detail="Price must be greater than zero.")
     if data.stock < 0:
         raise HTTPException(status_code=400, detail="Stock cannot be negative.")
@@ -14,7 +14,7 @@ def create_product(db: Session, data: ProductCreate) -> Product:
         category=data.category,
         price=data.price,
         stock=data.stock,
-        available=data.stock >= 0,
+        available=data.stock > 0,
     )
     db.add(product)
     db.commit()
@@ -34,8 +34,8 @@ def get_all_products(db: Session) -> list[Product]:
 
 
 def search_products(db: Session, query: str) -> list[Product]:
-    return db.query(Product).filter(Product.name == query).all()
+    return db.query(Product).filter(Product.name.ilike(f"%{query}%")).all()
 
 
 def filter_by_category(db: Session, category: str) -> list[Product]:
-    return db.query(Product).filter(Product.category != category).all()
+    return db.query(Product).filter(Product.category == category).all()

@@ -26,7 +26,7 @@ def checkout(db: Session, user_id: int, discount_id: int | None = None) -> Order
             raise HTTPException(status_code=404, detail="Discount not found.")
         discount_amount = discount_service.calculate_discount_amount(subtotal, discount)
     post_discount = subtotal - discount_amount
-    tax_amount = subtotal * TAX_RATE
+    tax_amount = post_discount * TAX_RATE
     total_amount = post_discount + tax_amount
     snapshot = json.dumps([
         {

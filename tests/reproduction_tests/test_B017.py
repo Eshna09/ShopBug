@@ -1,21 +1,34 @@
-"""Reproduction test for B017 — category filter returns non-matching products."""
-import pytest
+"""
+Reproduction test for B017.
+get_cart_subtotal multiplies item.product.stock by item.quantity
+instead of item.product.price by item.quantity.
+"""
 from app.database import Base
-from app.schemas.product import ProductCreate
-from app.services import product_service
+from app.models.product import Product
+from app.services import cart_service
 from tests.test_utils import engine, TestingSessionLocal
 
 
 def test_B017():
-    """Filtering by 'Electronics' should return only Electronics products."""
+    """
+    Expected: product price=$100, stock=5, quantity=2 → subtotal = 100*2 = $200.
+    Actual:   subtotal uses stock instead of price → 5*2 = $10.
+    """
     Base.metadata.create_all(bind=engine)
     db = TestingSessionLocal()
     try:
-        product_service.create_product(db, ProductCreate(name="Phone", category="Electronics", price=100.0, stock=1))
-        product_service.create_product(db, ProductCreate(name="Novel", category="Books", price=20.0, stock=1))
-        results = product_service.filter_by_category(db, "Electronics")
-        assert len(results) == 1, f"Expected 1 Electronics product, got {len(results)}"
-        assert results[0].category == "Electronics"
+        p = Product(name="B017Prod", category="Cat", price=100.0, stock=5, available=False)
+        db.add(p)
+        db.commit()
+        db.refresh(p)
+
+        cart_service.add_to_cart(db, user_id=1, product_id=p.id, quantity=2)
+        subtotal = cart_service.get_cart_subtotal(db, user_id=1)
+
+        assert abs(subtotal - 200.0) < 1e-4, (
+            f"Expected subtotal=200.0 (price*qty), got {subtotal} — "
+            f"looks like stock ({p.stock}) was used instead of price ({p.price})"
+        )
     finally:
         db.close()
         Base.metadata.drop_all(bind=engine)

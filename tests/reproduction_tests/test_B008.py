@@ -1,25 +1,33 @@
-"""Reproduction test for B008 — discount at minimum boundary rejected."""
-import pytest
+"""
+Reproduction test for B008.
+The stock-overflow check was removed from add_to_cart,
+so quantities exceeding available stock are silently accepted.
+"""
+from fastapi import HTTPException
 from app.database import Base
-from app.models.order import Discount
-from app.services import discount_service
+from app.models.product import Product
+from app.services import cart_service
 from tests.test_utils import engine, TestingSessionLocal
 
 
 def test_B008():
-    """Discount at exactly min_order_amount should apply (subtotal == min)."""
+    """
+    Expected: adding quantity=5 to a product with stock=3 raises HTTP 400.
+    Actual:   the item is created with quantity=5 despite only 3 in stock.
+    """
     Base.metadata.create_all(bind=engine)
     db = TestingSessionLocal()
     try:
-        discount = Discount(
-            code="B008TEST", discount_percent=10.0,
-            min_order_amount=500.0, max_discount_amount=None,
-        )
-        db.add(discount)
+        p = Product(name="B008Prod", category="Cat", price=10.0, stock=3, available=False)
+        db.add(p)
         db.commit()
-        db.refresh(discount)
-        amount = discount_service.calculate_discount_amount(500.0, discount)
-        assert amount > 0, f"Expected discount > 0 at exact minimum, got {amount}"
+        db.refresh(p)
+
+        try:
+            cart_service.add_to_cart(db, user_id=1, product_id=p.id, quantity=5)
+            assert False, "Expected HTTP 400 for quantity exceeding stock but no error was raised"
+        except HTTPException as exc:
+            assert exc.status_code == 400, f"Expected 400, got {exc.status_code}"
     finally:
         db.close()
         Base.metadata.drop_all(bind=engine)

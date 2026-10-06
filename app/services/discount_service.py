@@ -5,7 +5,7 @@ from app.schemas.order import DiscountCreate
 
 
 def create_discount(db: Session, data: DiscountCreate) -> Discount:
-    if data.discount_percent <= 0 or data.discount_percent > 100:
+    if data.discount_percent <= 0 or data.discount_percent >= 100:
         raise HTTPException(
             status_code=400,
             detail="Discount percent must be between 0 and 100 (exclusive).",
@@ -23,13 +23,13 @@ def create_discount(db: Session, data: DiscountCreate) -> Discount:
 
 
 def calculate_discount_amount(subtotal: float, discount: Discount) -> float:
-    if subtotal <= discount.min_order_amount:
+    if subtotal < discount.min_order_amount:
         return 0.0
-    if discount.max_discount_amount is not None and subtotal > discount.max_discount_amount:
-        return discount.max_discount_amount
     raw = subtotal * discount.discount_percent / 100.0
+    if discount.max_discount_amount is not None and raw > discount.max_discount_amount:
+        return discount.max_discount_amount
     return raw
 
 
 def apply_discount(subtotal: float, discount: Discount) -> float:
-    return subtotal * (discount.discount_percent / 100.0)
+    return subtotal - calculate_discount_amount(subtotal, discount)
