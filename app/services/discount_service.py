@@ -26,7 +26,7 @@ def calculate_discount_amount(subtotal: float, discount: Discount) -> float:
     if subtotal < discount.min_order_amount:
         return 0.0
     raw = subtotal * discount.discount_percent / 100.0
-    if discount.max_discount_amount is not None and raw > discount.max_discount_amount:
+    if discount.max_discount_amount is not None and subtotal > discount.max_discount_amount:
         return discount.max_discount_amount
     return raw
 
